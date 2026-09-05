@@ -16,6 +16,7 @@ import com.uxplima.uxmessentials.shared.adapter.inbound.gui.EntityListLayout;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.GuiText;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.ManagementGuiRegistry;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.ManagementHubView;
+import com.uxplima.uxmessentials.shared.adapter.inbound.gui.ModuleControlView;
 import com.uxplima.uxmessentials.shared.application.command.CommandId;
 import com.uxplima.uxmessentials.shared.application.health.HealthCheck;
 import com.uxplima.uxmessentials.shared.application.health.HealthResult;
@@ -125,6 +126,7 @@ class DoctorCommandSurfaceTest {
                 config,
                 new MigrationImportNode(service),
                 guiNode(),
+                Mockito.mock(ModuleControlView.class),
                 permissionsNode(),
                 placeholdersNode(),
                 new InlineScheduler(),
