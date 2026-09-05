@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One operator-configured menu opener: an item that opens the custom menu {@link #menu()} when a player
- * right-clicks it, optionally handed to players on join. Parsed by {@code OpenerLoader} from a single entry of
+ * clicks or taps it, optionally handed to players on join. Parsed by {@code OpenerLoader} from a single entry of
  * {@code menus/openers.conf} and consumed by the two opener listeners.
  *
  * <p>The {@link Item} descriptor carries the material and the (MiniMessage) name/lore the opener item is built
@@ -54,7 +54,8 @@ public record OpenerSpec(String menu, Item item, int slot, GiveOnJoin giveOnJoin
     /**
      * When a joining player is handed the opener item. {@link #NEVER} is the default — the opener only ever opens
      * from an item a player already holds. {@link #ALWAYS} hands the item out on every join; {@link #FIRST} hands
-     * it out only once, tracked by a per-opener PDC flag so a relog does not duplicate it.
+     * it out only once, tracked by a per-opener PDC flag so a relog does not duplicate it. Existing tagged opener
+     * items are never duplicated in any mode.
      */
     public enum GiveOnJoin {
         NEVER,

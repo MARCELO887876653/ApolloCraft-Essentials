@@ -21,14 +21,19 @@ import org.jspecify.annotations.Nullable;
  * Floodgate never touches Cumulus. When Floodgate is installed the {@link #forServer(Server)} factory returns the
  * Cumulus-backed screen instead — that concrete class is the only place the {@code org.geysermc} SDK is named, and
  * the factory constructs it strictly behind the {@code isPluginEnabled("floodgate")} guard, so it (and the SDK it
- * references) never loads on a Java-only server. The engine only ever reaches this after a
- * {@link BedrockDetector} has confirmed the viewer is a Bedrock player, so {@link #NONE} is never actually sent a
- * form.
+ * references) never loads on a Java-only server. The engine checks {@link #available()} before redirecting a
+ * Bedrock player to forms, so {@link #NONE} causes the ordinary inventory UI to be used instead of silently
+ * swallowing the screen.
  */
 public interface BedrockScreen {
 
-    /** The Java-only default: sending any form is a no-op, and no {@code org.geysermc} class is referenced. */
+    /** The no-forms default: unavailable and a no-op, with no {@code org.geysermc} class reference. */
     BedrockScreen NONE = new BedrockScreen() {
+        @Override
+        public boolean available() {
+            return false;
+        }
+
         @Override
         public void sendSimpleForm(
                 Player player,
@@ -65,6 +70,11 @@ public interface BedrockScreen {
                 Consumer<Map<String, String>> onSubmit,
                 Runnable onClose) {}
     };
+
+    /** Whether this screen has a native forms backend available on the running server. */
+    default boolean available() {
+        return true;
+    }
 
     /**
      * Send {@code player} a SimpleForm — a titled list of buttons — and route the tapped button back through

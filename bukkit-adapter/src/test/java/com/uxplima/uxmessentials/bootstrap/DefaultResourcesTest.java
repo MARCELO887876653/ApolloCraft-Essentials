@@ -32,6 +32,8 @@ class DefaultResourcesTest {
         assertThat(dataFolder.resolve("modules/communication/join-quit.conf")).isRegularFile();
         assertThat(dataFolder.resolve("modules/communication/announcer.conf")).isRegularFile();
         assertThat(dataFolder.resolve("modules/communication/info-pages.conf")).isRegularFile();
+        assertThat(dataFolder.resolve("menus/apollo.conf")).isRegularFile();
+        assertThat(dataFolder.resolve("menus/openers.conf")).isRegularFile();
         assertThat(dataFolder.resolve("messages/messages_en.conf")).isRegularFile();
     }
 

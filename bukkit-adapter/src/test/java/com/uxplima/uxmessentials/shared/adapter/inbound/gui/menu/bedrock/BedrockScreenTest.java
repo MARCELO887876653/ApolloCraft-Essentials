@@ -25,6 +25,11 @@ import org.junit.jupiter.api.Test;
 class BedrockScreenTest {
 
     @Test
+    void noneReportsThatNativeFormsAreUnavailable() {
+        assertThat(BedrockScreen.NONE.available()).isFalse();
+    }
+
+    @Test
     void noneSendsNothingAndNeverThrows() {
         AtomicBoolean tapped = new AtomicBoolean(false);
         // NONE ignores every argument; the player is a bare mock it never touches, so no MockBukkit server is needed.

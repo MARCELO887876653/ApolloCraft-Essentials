@@ -43,9 +43,9 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
- * MockBukkit coverage of open-with-item through the real {@link MenuOpenerInteractListener}. A right-click with the
+ * MockBukkit coverage of open-with-item through the real {@link MenuOpenerInteractListener}. Either click with the
  * tagged opener opens the target menu and cancels the interaction; a plain item, an opener whose menu is no longer
- * registered, and a left-click all do nothing.
+ * registered, and an off-hand event do nothing.
  */
 class MenuOpenerInteractListenerTest {
 
@@ -113,7 +113,7 @@ class MenuOpenerInteractListenerTest {
     }
 
     @Test
-    void aLeftClickWithTheOpenerDoesNothing() {
+    void leftClickingTheOpenerAlsoOpensTheMenuForTouchFriendlyAccess() {
         PlayerMock player = server.addPlayer("Steve");
         ItemStack opener = openerItems.build(opener("hub"));
         PlayerInteractEvent event = new PlayerInteractEvent(
@@ -121,7 +121,8 @@ class MenuOpenerInteractListenerTest {
 
         listener.onInteract(event);
 
-        assertThat(openMenuIdFor(player)).isEmpty();
+        assertThat(openMenuIdFor(player)).contains("hub");
+        assertThat(event.useItemInHand()).isEqualTo(Event.Result.DENY);
     }
 
     private static PlayerInteractEvent rightClick(PlayerMock player, ItemStack item) {

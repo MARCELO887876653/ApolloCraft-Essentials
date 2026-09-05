@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.plugin.Plugin;
@@ -166,6 +167,38 @@ class CustomMenusWiringTest {
         assertThat(wired.listeners()).hasSize(4); // opener interact + join + swap + edit-lock
     }
 
+    @Test
+    void shippedApolloPlayerMenusLoadTogetherWithTheirOpener(@TempDir Path dataFolder) throws Exception {
+        Path menus = Files.createDirectories(dataFolder.resolve("menus"));
+        List<String> names = List.of(
+                "apollo",
+                "apollo-economia",
+                "apollo-social",
+                "apollo-teleportes",
+                "apollo-utilidades");
+        for (String name : names) {
+            Files.copy(shippedMenu(name + ".conf"), menus.resolve(name + ".conf"));
+        }
+        Files.copy(shippedMenu("openers.conf"), menus.resolve("openers.conf"));
+
+        CustomMenusWiring.Wired wired = CustomMenusWiring.wire(
+                plugin,
+                menus(),
+                bindings(),
+                dataFolder,
+                log(),
+                scheduler(),
+                messages(),
+                guiText(),
+                new GuiLayouts(dataFolder, log()),
+                textInput(),
+                new ManagementGuiRegistry());
+
+        assertThat(wired.menuNames().get()).containsExactlyInAnyOrderElementsOf(names);
+        assertThat(wired.commands()).hasSize(1);
+        assertThat(wired.listeners()).hasSize(4);
+    }
+
     /** The generic vocabulary registry exactly as PluginModule installs it at startup (console dispatch off). */
     private static MenuBindings bindings() {
         MenuBindings bindings = new MenuBindings();
@@ -193,6 +226,10 @@ class CustomMenusWiringTest {
 
     private static Path shippedExample() {
         return ConfigLayoutResources.resources().resolve("menus/example.conf");
+    }
+
+    private static Path shippedMenu(String file) {
+        return ConfigLayoutResources.resources().resolve("menus").resolve(file);
     }
 
     private static Messages messages() {

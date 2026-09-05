@@ -25,7 +25,8 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 /**
  * MockBukkit coverage of give-on-join through the real {@link MenuOpenerJoinListener}. A {@link GiveOnJoin#FIRST}
  * opener is handed to a fresh joiner at its slot with the given-flag set, and a rejoin does not duplicate it;
- * {@link GiveOnJoin#ALWAYS} hands one out on every join; {@link GiveOnJoin#NEVER} hands out nothing; and an occupied
+ * {@link GiveOnJoin#ALWAYS} restores a missing item without duplicating one already held; {@link GiveOnJoin#NEVER}
+ * hands out nothing; and an occupied
  * target slot falls back to a free slot rather than overwriting what is there.
  */
 class MenuOpenerJoinListenerTest {
@@ -60,15 +61,28 @@ class MenuOpenerJoinListenerTest {
     }
 
     @Test
-    void alwaysGivesTheItemOnEveryJoin() {
+    void alwaysKeepsOneItemAcrossRejoinsWithoutDuplicatingIt() {
         PlayerMock player = server.addPlayer("Steve");
         MenuOpenerJoinListener listener = listenerFor(opener("hub", 4, GiveOnJoin.ALWAYS));
 
         join(listener, player);
         join(listener, player);
 
-        assertThat(totalOpenerAmount(player)).isEqualTo(2);
+        assertThat(totalOpenerAmount(player)).isEqualTo(1);
         assertThat(openerItems.hasGiven(player, "hub")).isFalse();
+    }
+
+    @Test
+    void alwaysRestoresTheItemAfterItWasLost() {
+        PlayerMock player = server.addPlayer("Steve");
+        MenuOpenerJoinListener listener = listenerFor(opener("hub", 4, GiveOnJoin.ALWAYS));
+
+        join(listener, player);
+        player.getInventory().clear();
+        join(listener, player);
+
+        assertThat(totalOpenerAmount(player)).isEqualTo(1);
+        assertThat(openerItems.menuOf(itemAt(player, 4))).contains("hub");
     }
 
     @Test

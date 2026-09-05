@@ -690,7 +690,7 @@ public final class Menus {
         if (live == null || !live.isOnline()) {
             return;
         }
-        if (bedrock.isBedrock(viewer.uuid())) {
+        if (bedrockScreen.available() && bedrock.isBedrock(viewer.uuid())) {
             sendConfirmModal(live, viewer, title, onYes, onNo);
             return;
         }
@@ -1048,7 +1048,8 @@ public final class Menus {
         // back history and fires the menu's open-actions the same way the chest path does — otherwise a back from a
         // form would have no history to step to and a menu's open-actions would never fire for a Bedrock viewer. A Java
         // viewer (isBedrock false) falls straight through to the chest path unchanged.
-        if (bedrock.isBedrock(viewer.uuid())
+        if (bedrockScreen.available()
+                && bedrock.isBedrock(viewer.uuid())
                 && !spec.chestOnly()
                 && spec.bedrock().isPresent()) {
             sendBedrockCustomForm(live, spec, ctx);
@@ -1056,7 +1057,7 @@ public final class Menus {
             return;
         }
         // The resolved list cache is threaded through so a list-backed menu's entries page as form buttons.
-        if (bedrock.isBedrock(viewer.uuid()) && !spec.chestOnly()) {
+        if (bedrockScreen.available() && bedrock.isBedrock(viewer.uuid()) && !spec.chestOnly()) {
             sendBedrockForm(live, spec, ctx, resolved.rows());
             afterBedrockOpen(spec, live, ctx, viewer, specId, subject, page, arguments, record);
             return;

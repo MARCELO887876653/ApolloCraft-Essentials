@@ -14,6 +14,7 @@ alts alts -
 announce announce -
 antioch antioch grenade
 anvil anvil -
+apollo apollo apollocraft,apolloessentials,uxmess,uxmessentials,uxe
 ascend ascend -
 autopickup autopickup -
 autosell autosell -
@@ -281,7 +282,6 @@ unlimited unlimited -
 unmute unmute -
 unwarn unwarn -
 up up -
-uxmess uxmess uxmessentials,uxe
 vanish vanish v
 vault vault -
 veinminer veinminer -

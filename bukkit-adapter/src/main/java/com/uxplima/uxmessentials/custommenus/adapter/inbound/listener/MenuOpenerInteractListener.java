@@ -16,12 +16,12 @@ import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.Menus;
 import com.uxplima.uxmessentials.shared.adapter.outbound.BukkitRefs;
 
 /**
- * Opens a custom menu when the player right-clicks the opener item that targets it. The held item is recognised by
+ * Opens a custom menu when the player interacts with the opener item that targets it. The held item is recognised by
  * its persistent tag (read by {@link OpenerItems#menuOf}), not its material or name, so the operator may skin the
  * opener however they like. On a match the menu is opened through the shared {@link Menus} façade and the interaction
  * is cancelled so the item is not also used/placed.
  *
- * <p>Cheap gates run first so an ordinary interact stays hot-path-light: only a right-click with the main hand is
+ * <p>Cheap gates run first so an ordinary interact stays hot-path-light: any air/block click with the main hand is
  * considered (the {@link EquipmentSlot#HAND} guard makes the event fire once rather than twice for the two hands),
  * the item must be a real, tagged opener, and the tagged menu must still be registered — a tag whose menu was since
  * deleted or renamed is a silent no-op, never an error. The event fires on the player's own region thread, and the
@@ -41,7 +41,7 @@ public final class MenuOpenerInteractListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
-        if (!isRightClick(event.getAction()) || event.getHand() != EquipmentSlot.HAND) {
+        if (!isClick(event.getAction()) || event.getHand() != EquipmentSlot.HAND) {
             return;
         }
         ItemStack item = event.getItem();
@@ -56,7 +56,10 @@ public final class MenuOpenerInteractListener implements Listener {
         menus.open(BukkitRefs.toRef(event.getPlayer()), menuId.get(), null);
     }
 
-    private static boolean isRightClick(Action action) {
-        return action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK;
+    private static boolean isClick(Action action) {
+        return action == Action.RIGHT_CLICK_AIR
+                || action == Action.RIGHT_CLICK_BLOCK
+                || action == Action.LEFT_CLICK_AIR
+                || action == Action.LEFT_CLICK_BLOCK;
     }
 }

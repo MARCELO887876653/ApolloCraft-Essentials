@@ -23,11 +23,11 @@ import org.junit.jupiter.api.Test;
 class CommandCatalogDriftTest {
 
     // The literals PluginModule.wire registers directly before applyCatalog runs, none of which is
-    // sourced from a feature module: /uxmess (UxmessCommand.ROOT_LITERAL) is the admin root, /lang
+    // sourced from a feature module: /apollo (UxmessCommand.ROOT_LITERAL) is the admin root, /lang
     // (LangCommand.LITERAL) is the cross-cutting locale switch, /backup (BackupCommand.LITERAL) is the
     // operator data snapshot, and /help (HelpCommand.LITERAL) is the cross-cutting command listing. They
     // share the same catalog namespace as the module commands, so they belong in the checks below.
-    private static final List<String> BOOTSTRAP_LITERALS = List.of("uxmess", "lang", "backup", "help");
+    private static final List<String> BOOTSTRAP_LITERALS = List.of("apollo", "lang", "backup", "help");
 
     private static List<String> allCommandLiterals() {
         List<String> moduleLiterals = new DefaultModuleRegistry()

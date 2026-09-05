@@ -145,7 +145,7 @@ public final class TextInput {
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(onSubmit, "onSubmit");
         Objects.requireNonNull(onCancel, "onCancel");
-        if (bedrock.isBedrock(viewer.uuid())) {
+        if (bedrockScreen.available() && bedrock.isBedrock(viewer.uuid())) {
             sendInputForm(player, viewer, request, onSubmit, onCancel);
             return;
         }
@@ -164,8 +164,9 @@ public final class TextInput {
      * As {@link #prompt}, but with the prompt already resolved to a {@link Component} rather than looked up from a
      * {@link MessageKey} catalog — the entry point the menu engine uses, whose {@code input:} prompts are arbitrary
      * {@code @key}-or-MiniMessage strings the engine resolves through its own renderer, not catalog enum keys. The
-     * backend is still chosen from the operator's per-{@code key} mode, and a Bedrock viewer still gets the Cumulus
-     * form regardless of that mode; the cancel-keyword policy and the entity-thread hop are the shared {@link #route}.
+     * backend is still chosen from the operator's per-{@code key} mode, and a Bedrock viewer gets the Cumulus form
+     * regardless of that mode when a forms backend is available; the cancel-keyword policy and the entity-thread hop
+     * are the shared {@link #route}.
      *
      * @param player the live player to prompt
      * @param viewer the viewer reference — locale, identity, and the region the callbacks run on
@@ -189,7 +190,7 @@ public final class TextInput {
         Objects.requireNonNull(prompt, "prompt");
         Objects.requireNonNull(onSubmit, "onSubmit");
         Objects.requireNonNull(onCancel, "onCancel");
-        if (bedrock.isBedrock(viewer.uuid())) {
+        if (bedrockScreen.available() && bedrock.isBedrock(viewer.uuid())) {
             sendResolvedInputForm(player, viewer, prompt, initialText, onSubmit, onCancel);
             return;
         }

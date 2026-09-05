@@ -16,11 +16,12 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Hands joining players their opener items per each opener's {@link GiveOnJoin} rule. {@link GiveOnJoin#ALWAYS}
- * gives the item on every join; {@link GiveOnJoin#FIRST} gives it once, guarded by the per-opener PDC flag
+ * ensures the item is present on every join; {@link GiveOnJoin#FIRST} gives it once, guarded by the per-opener PDC flag
  * {@link OpenerItems} owns, so a relog never duplicates it; {@link GiveOnJoin#NEVER} gives nothing (the opener is
  * only reachable from an item a player already holds).
  *
- * <p>The item is placed in the opener's configured slot when that slot is a valid, empty player-inventory slot;
+ * <p>An already-present tagged opener is never duplicated. Otherwise the item is placed in the opener's configured
+ * slot when that slot is a valid, empty player-inventory slot;
  * otherwise it is added to the first free slot so a full or occupied target never drops the item on the floor. The
  * join event fires on the joining player's own entity thread, where touching their live inventory is legal, so the
  * give runs inline — it only ever touches the one player who joined, never the wider roster.
@@ -51,6 +52,9 @@ public final class MenuOpenerJoinListener implements Listener {
         if (mode == GiveOnJoin.NEVER) {
             return;
         }
+        if (hasOpener(player.getInventory(), opener.menu())) {
+            return;
+        }
         if (mode == GiveOnJoin.FIRST && openerItems.hasGiven(player, opener.menu())) {
             return;
         }
@@ -69,6 +73,15 @@ public final class MenuOpenerJoinListener implements Listener {
         } else {
             inventory.addItem(item);
         }
+    }
+
+    private boolean hasOpener(PlayerInventory inventory, String menuId) {
+        for (ItemStack item : inventory.getContents()) {
+            if (!isEmpty(item) && openerItems.menuOf(item).filter(menuId::equals).isPresent()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isEmpty(@Nullable ItemStack item) {

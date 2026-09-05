@@ -160,6 +160,28 @@ class BedrockSimpleFormGoldenTest {
         assertThat(screen.sent).as("no form is sent for a chest-only menu").isFalse();
     }
 
+    @Test
+    void aBedrockViewerFallsBackToAChestWhenFloodgateFormsAreUnavailable() {
+        detector.bedrock = true;
+        Menus menus = new Menus(
+                renderer,
+                scheduler,
+                bindings.lists(),
+                null,
+                bindings.actions(),
+                bindings.conditions(),
+                null,
+                detector,
+                BedrockScreen.NONE);
+        menus.registerSpec("m", loader.parse(TWO_ITEMS));
+
+        open(menus, "m");
+
+        assertThat(menuOpen())
+                .as("Geyser without a forms backend must still receive the ordinary inventory menu")
+                .isTrue();
+    }
+
     /** The production-shaped façade: action registry threaded in, plus the fake detector and screen. */
     private Menus engine() {
         return new Menus(
