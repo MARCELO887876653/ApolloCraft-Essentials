@@ -163,6 +163,7 @@ class ReloadCommandSurfaceTest {
                 config,
                 new MigrationImportNode(service),
                 guiNode(),
+                Mockito.mock(com.uxplima.uxmessentials.shared.adapter.inbound.gui.ModuleControlView.class),
                 permissionsNode(),
                 placeholdersNode(),
                 scheduler,
