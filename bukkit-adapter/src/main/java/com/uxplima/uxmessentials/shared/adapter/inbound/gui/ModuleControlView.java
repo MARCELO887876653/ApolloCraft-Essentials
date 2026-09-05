@@ -57,7 +57,8 @@ public final class ModuleControlView {
     private static final int INFO_SLOT = 49;
     private static final int NEXT_SLOT = 52;
     private static final int CLOSE_SLOT = 53;
-    private static final List<Integer> CONTENT_SLOTS = java.util.stream.IntStream.range(0, 45).boxed().toList();
+    private static final List<Integer> CONTENT_SLOTS =
+            java.util.stream.IntStream.range(0, 45).boxed().toList();
 
     private final ModuleRegistry registry;
     private final ConfigStore config;
@@ -153,14 +154,15 @@ public final class ModuleControlView {
                 }
                 send(
                         viewer,
-                        next
-                                ? GuiMessageKey.MODULE_CONTROL_SAVED_ENABLED
-                                : GuiMessageKey.MODULE_CONTROL_SAVED_DISABLED,
+                        next ? GuiMessageKey.MODULE_CONTROL_SAVED_ENABLED : GuiMessageKey.MODULE_CONTROL_SAVED_DISABLED,
                         Map.of("module", module.id().value()));
                 open(player, viewer);
             });
         } catch (RuntimeException failure) {
-            log.error("failed to persist ApolloCraft module toggle for " + module.id().value(), failure);
+            log.error(
+                    "failed to persist ApolloCraft module toggle for "
+                            + module.id().value(),
+                    failure);
             send(viewer, GuiMessageKey.MODULE_CONTROL_SAVE_FAILED, Map.of());
         } finally {
             pendingModules.remove(module.id());
@@ -175,7 +177,8 @@ public final class ModuleControlView {
         Path file = dataFolder.resolve("modules").resolve(id.value()).resolve("config.conf");
         try {
             Files.createDirectories(Objects.requireNonNull(file.getParent(), "module config parent"));
-            HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(file).build();
+            HoconConfigurationLoader loader =
+                    HoconConfigurationLoader.builder().path(file).build();
             CommentedConfigurationNode root = Files.exists(file) ? loader.load() : CommentedConfigurationNode.root();
             root.node("enabled").set(enabled);
             loader.save(root);
@@ -192,7 +195,9 @@ public final class ModuleControlView {
 
         List<Component> lore = new ArrayList<>();
         lore.add(guiText.text(
-                viewer, GuiMessageKey.MODULE_CONTROL_MODULE_ID, Map.of("id", module.id().value())));
+                viewer,
+                GuiMessageKey.MODULE_CONTROL_MODULE_ID,
+                Map.of("id", module.id().value())));
         lore.add(Component.empty());
         lore.add(guiText.text(
                 viewer,
@@ -204,14 +209,15 @@ public final class ModuleControlView {
                         : GuiMessageKey.MODULE_CONTROL_RESTART_DISABLED));
         lore.add(Component.empty());
         lore.add(guiText.text(
-                viewer,
-                pending ? GuiMessageKey.MODULE_CONTROL_PENDING : GuiMessageKey.MODULE_CONTROL_NO_PENDING));
+                viewer, pending ? GuiMessageKey.MODULE_CONTROL_PENDING : GuiMessageKey.MODULE_CONTROL_NO_PENDING));
         lore.add(guiText.text(
                 viewer,
                 desired ? GuiMessageKey.MODULE_CONTROL_CLICK_DISABLE : GuiMessageKey.MODULE_CONTROL_CLICK_ENABLE));
 
         Component title = guiText.text(
-                viewer, GuiMessageKey.MODULE_CONTROL_MODULE_NAME, Map.of("module", module.id().value()));
+                viewer,
+                GuiMessageKey.MODULE_CONTROL_MODULE_NAME,
+                Map.of("module", module.id().value()));
         return tile(material, title, lore);
     }
 
@@ -230,7 +236,8 @@ public final class ModuleControlView {
     }
 
     private ItemStack infoItem(PlayerRef viewer) {
-        long desired = registry.all().stream().filter(module -> module.enabled(config)).count();
+        long desired =
+                registry.all().stream().filter(module -> module.enabled(config)).count();
         long pending = registry.all().stream()
                 .filter(module -> enabledAtBoot.contains(module.id()) != module.enabled(config))
                 .count();

@@ -73,18 +73,14 @@ public final class UxmessCommand implements CommandRegistration, AutoCloseable {
     private static final String STATUS_NO_MODULES = "Nenhum módulo foi registrado.";
     private static final String HELP_HEADER = "ApolloCraft Essentials:";
     private static final String HELP_STATUS = "/apollo status: lista os módulos e seus estados";
-    private static final String HELP_DOCTOR =
-            "/apollo doctor [repair [confirm]]: diagnóstico técnico do plugin";
+    private static final String HELP_DOCTOR = "/apollo doctor [repair [confirm]]: diagnóstico técnico do plugin";
     private static final String HELP_HELP = "/apollo help: mostra esta ajuda";
     private static final String HELP_GUI = "/apollo gui: abre a central de gerenciamento";
     private static final String HELP_MODULES = "/apollo modules: ativa/desativa módulos pelo menu";
-    private static final String HELP_RELOAD =
-            "/apollo reload [module]: recarrega configurações e mensagens";
+    private static final String HELP_RELOAD = "/apollo reload [module]: recarrega configurações e mensagens";
     private static final String HELP_IMPORT = "/apollo import <source> [--dry-run]: importa dados antigos";
-    private static final String HELP_PERMISSIONS =
-            "/apollo permissions [area] [page]: catálogo de permissões";
-    private static final String HELP_PLACEHOLDERS =
-            "/apollo placeholders [area] [page]: catálogo de placeholders";
+    private static final String HELP_PERMISSIONS = "/apollo permissions [area] [page]: catálogo de permissões";
+    private static final String HELP_PLACEHOLDERS = "/apollo placeholders [area] [page]: catálogo de placeholders";
 
     private static final String DOCTOR_HEADER = "ApolloCraft Essentials: diagnóstico";
     private static final String DOCTOR_RUNNING = "Running health checks off-tick…";
