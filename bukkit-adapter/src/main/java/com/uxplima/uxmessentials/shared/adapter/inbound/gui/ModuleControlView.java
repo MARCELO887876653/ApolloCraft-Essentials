@@ -293,7 +293,7 @@ public final class ModuleControlView implements Listener {
 
     private static ItemStack button(Material material, String name, NamedTextColor color, List<String> loreLines) {
         List<Component> lore = loreLines.stream()
-                .map(line -> Component.text(line, NamedTextColor.GRAY))
+                .<Component>map(line -> Component.text(line, NamedTextColor.GRAY))
                 .toList();
         return item(material, name, color, lore);
     }
