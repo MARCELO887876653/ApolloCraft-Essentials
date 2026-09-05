@@ -1,0 +1,244 @@
+name: ApolloCraftEssentials
+version: '${version}'
+main: com.uxplima.uxmessentials.bootstrap.UxmEssentialsPlugin
+bootstrapper: com.uxplima.uxmessentials.bootstrap.UxmEssentialsBootstrap
+loader: com.uxplima.uxmessentials.bootstrap.UxmEssentialsLoader
+api-version: '1.21'
+
+# Enabled before the worlds are created, which is the only way CraftServer.getGenerator will accept
+# `generator: ApolloCraftEssentials:void` for the default world: it refuses a generator whose plugin is not
+# enabled yet, and the default world is built before a POSTWORLD plugin enables. The cost is that
+# onLoad and onEnable both run with no worlds in existence, so wiring that needs one hands its work
+# to WorldPhase and it runs at ServerLoadEvent instead.
+load: STARTUP
+authors: ['ApolloCraft', 'UXPLIMA']
+description: 'ApolloCraft Essentials — custom all-in-one essentials for ApolloCraft, based on the open-source uxmEssentials project.'
+website: 'https://github.com/UXPLIMA/uxmEssentials'
+
+# Folia: every scheduler call goes through the injected Scheduler port; the
+# adapter routes to the right region/entity/global scheduler.
+folia-supported: true
+
+# Optional integrations — the plugin runs fully without any of them. LuckPerms
+# backs the Permissions port (else the Bukkit-permission default impl, ADR 0005);
+# Vault/Treasury are consumed/registered by the EconomyProvider adapters (ADR 0004).
+dependencies:
+  server:
+    LuckPerms:
+      load: BEFORE
+      required: false
+    Treasury:
+      load: BEFORE
+      required: false
+    Vault:
+      load: BEFORE
+      required: false
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    # MiniPlaceholders contributes MiniMessage-native tags our catalog lines may use (shared.adapter.outbound
+    # miniplaceholders MiniPlaceholdersSupport). Reached only past a plugin-present guard, so the plugin runs
+    # fully without it. Loaded before us so the guard sees it on enable rather than after.
+    MiniPlaceholders:
+      load: BEFORE
+      required: false
+    # NuVotifier/Votifier feeds the vote context; the vote listener is reached reflectively behind a
+    # plugin-present guard, so the plugin runs fully without Votifier installed.
+    Votifier:
+      load: BEFORE
+      required: false
+    # Dynmap/squaremap/BlueMap back the map-marker integration. Loaded before us so the marker API is ready
+    # when we render on enable; reached only past a plugin-present guard, so the plugin runs fully without any
+    # of them. Only one binds: squaremap, then Dynmap, then BlueMap.
+    dynmap:
+      load: BEFORE
+      required: false
+    squaremap:
+      load: BEFORE
+      required: false
+    BlueMap:
+      load: BEFORE
+      required: false
+    # Land-claim plugins back the homes claim-policy integration (homes set/teleport respect claims). Loaded
+    # before us so each provider's plugin-present guard sees them on enable; reached only past that guard
+    # (typed providers compileOnly, the rest reflective), so the plugin runs fully without any of them.
+    Lands:
+      load: BEFORE
+      required: false
+    GriefPrevention:
+      load: BEFORE
+      required: false
+    GriefDefender:
+      load: BEFORE
+      required: false
+    ExcellentClaims:
+      load: BEFORE
+      required: false
+    SimpleClaimSystem:
+      load: BEFORE
+      required: false
+    RClaim:
+      load: BEFORE
+      required: false
+    XClaim:
+      load: BEFORE
+      required: false
+    Homestead:
+      load: BEFORE
+      required: false
+    Towny:
+      load: BEFORE
+      required: false
+    # KingdomsX registers under the name Kingdoms, which is the name to probe and the one that has to
+    # appear here; KingdomsX is only how the resource is listed.
+    Kingdoms:
+      load: BEFORE
+      required: false
+    HuskClaims:
+      load: BEFORE
+      required: false
+    HuskTowns:
+      load: BEFORE
+      required: false
+    # FactionsUUID and SaberFactions both register under the name Factions and share the same
+    # com.massivecraft.factions API, so this one entry covers either fork.
+    Factions:
+      load: BEFORE
+      required: false
+    BentoBox:
+      load: BEFORE
+      required: false
+    Residence:
+      load: BEFORE
+      required: false
+    PlotSquared:
+      load: BEFORE
+      required: false
+    SuperiorSkyblock2:
+      load: BEFORE
+      required: false
+    # Menu-engine optional integrations — consumed behind the hooks SPI (shared.adapter.outbound.hooks). Each is
+    # reached only past a plugin-present guard, so the menu engine (and the plugin as a whole) runs fully without
+    # any of them; the no-op default carries no SDK type, so an absent one never loads an external class. Loaded
+    # before us so their head/item registries are ready when a menu renders on enable.
+    HeadDatabase:
+      load: BEFORE
+      required: false
+    ItemsAdder:
+      load: BEFORE
+      required: false
+    Oraxen:
+      load: BEFORE
+      required: false
+    Nexo:
+      load: BEFORE
+      required: false
+    CraftEngine:
+      load: BEFORE
+      required: false
+    MMOItems:
+      load: BEFORE
+      required: false
+    ExecutableItems:
+      load: BEFORE
+      required: false
+    # Currency back-ends the menu engine can target by spec (shared.adapter.outbound.currency). Vault is already
+    # listed above; these three are reached purely by reflection past a plugin-present guard, so the menu engine
+    # runs fully without any of them and an absent one loads no class. Loaded before us so the guard sees them on
+    # enable. (Exp needs no plugin — it is native Paper experience.)
+    PlayerPoints:
+      load: BEFORE
+      required: false
+    CoinsEngine:
+      load: BEFORE
+      required: false
+    zEssentials:
+      load: BEFORE
+      required: false
+    # EconomyShopGUI is the bottom layer of the worth chain (economy.adapter.outbound ShopWorthSource):
+    # an item nobody has priced with /setworth or in config falls back to the shop's own sell price.
+    # Read reflectively past a plugin-present guard, and only on the first /worth or /sell. The premium
+    # edition registers under its own plugin name and ships the same API, so both names are declared and
+    # one reader serves either.
+    EconomyShopGUI:
+      load: BEFORE
+      required: false
+    EconomyShopGUI-Premium:
+      load: BEFORE
+      required: false
+    # Integration condition back-ends the menu engine gates on (shared.adapter.inbound.gui.menu.vocab
+    # IntegrationConditions). All are reached purely by reflection past a plugin-present guard: job:<name> against
+    # JobsReborn, worldguard-region:<id> against WorldGuard, mcmmo-level:<skill>:<n> and mcmmo-power:<n> against
+    # mcMMO, so the menu engine runs fully without any of them and an absent one loads no class. Loaded before us
+    # so the guard sees them on enable.
+    Jobs:
+      load: BEFORE
+      required: false
+    mcMMO:
+      load: BEFORE
+      required: false
+    WorldGuard:
+      load: BEFORE
+      required: false
+    # WorldEdit backs '/region select', which reads your current WorldEdit selection (regions.adapter.inbound
+    # command WorldEditRegionSelection). Reached reflectively past a present-guard, so the regions module runs
+    # fully without it. Loaded before us so its selection API is ready when the command resolves.
+    WorldEdit:
+      load: BEFORE
+      required: false
+    # Floodgate backs the Bedrock-form integration (shared.adapter.inbound.gui.menu.bedrock BedrockDetector). The
+    # detector binds to the Floodgate SDK only past a plugin-present guard, so the menu engine (and the plugin as a
+    # whole) runs fully on a Java-only server: an absent Floodgate never loads an org.geysermc class. Loaded before
+    # us so the guard sees it on enable; Cumulus's form classes ride along with Floodgate transitively.
+    floodgate:
+      load: BEFORE
+      required: false
+    # Geyser is the same integration for networks that run it without Floodgate: it can still name a Bedrock
+    # connection, so those players get native forms rather than a chest menu. Read reflectively, and only when
+    # Floodgate is absent, since Floodgate is the richer source when both are installed.
+    Geyser-Spigot:
+      load: BEFORE
+      required: false
+    # Login plugins back the offline-mode handoff (security.adapter LoginPluginHandoff): on a cracked server our
+    # second-factor prompt must wait until the login plugin has authenticated the player, or we would be asking an
+    # unauthenticated stranger for the account holder's PIN. The handoff resolves the login event reflectively past
+    # a present check, so a server with neither installed behaves exactly as before. Loaded before us so the event
+    # class is resolvable when we register the listener rather than after.
+    AuthMe:
+      load: BEFORE
+      required: false
+    nLogin:
+      load: BEFORE
+      required: false
+    # SuperVanish and PremiumVanish publish the same de.myzelyam vanish API, and the overlay over our own vanish
+    # authority (vanish.adapter.outbound ForeignVanishStore) reads it so a player they have hidden is hidden from
+    # our tab list, nametags and /msg as well. Reflective past a plugin-present guard; with neither installed the
+    # plain in-memory store is bound and nothing changes.
+    SuperVanish:
+      load: BEFORE
+      required: false
+    PremiumVanish:
+      load: BEFORE
+      required: false
+    # Combat plugins back the teleport combat gate (teleport.adapter.outbound ForeignCombatGate): a tagged
+    # player may not /home, /tpa or /rtp out of a fight. Read reflectively past a plugin-present guard, so a
+    # server with neither installed keeps the gate bound to NEVER and behaves exactly as before.
+    CombatLogX:
+      load: BEFORE
+      required: false
+    PvPManager:
+      load: BEFORE
+      required: false
+    # ViaVersion reports the protocol version a translated client actually speaks (shared.adapter.outbound
+    # protocol ViaVersionClientProtocol), which the client-version menu condition reads. Reflective past a
+    # plugin-present guard; without it every player reports UNKNOWN and the condition passes for everyone.
+    ViaVersion:
+      load: BEFORE
+      required: false
+
+# Permissions are not declared here. Every node the plugin publishes lives in one Java catalogue
+# (core .../shared/application/permission/PermissionCatalog), and the plugin registers the whole
+# surface with the server on enable. Declaring them twice is what let them drift: nodes checked in
+# code that this file never listed, and nodes listed here that no code ever read. The catalogue is
+# also what the reference page and the in-game /uxmess permissions listing are built from, so a node
+# cannot exist without being visible to an operator.

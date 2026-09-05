@@ -1,0 +1,11 @@
+{
+  "id": "uxmessentials-velocity",
+  "name": "ApolloCraft Essentials Velocity",
+  "version": "${version}",
+  "description": "Cross-server bus broker and proxy command-control for ApolloCraft Essentials.",
+  "authors": ["UXPLIMA"],
+  "dependencies": [
+    { "id": "luckperms", "optional": true }
+  ],
+  "main": "com.uxplima.uxmessentials.velocity.UxmEssentialsVelocity"
+}
