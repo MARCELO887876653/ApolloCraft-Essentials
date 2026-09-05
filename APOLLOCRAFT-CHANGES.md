@@ -31,3 +31,5 @@ Versão personalizada do ApolloCraft baseada no uxmEssentials (UXPLIMA), mantend
 O projeto continua exigindo Java 25 e Gradle 9.4.1. O artefato Paper/Purpur é gerado pelo task `:bukkit-adapter:shadowJar`.
 
 Nesta sessão o build completo não pôde ser executado porque o ambiente local disponível possui Java 21 e não tem acesso de rede às dependências/Toolchain Java 25. As alterações de estrutura foram verificadas estaticamente: nenhum arquivo original foi removido, os 36 módulos seguem registrados, os 12 catálogos contêm a nova chave do menu, e os descritores YAML/JSON modificados são válidos.
+
+- Build: removida a restrição de vendor Adoptium/Temurin do Java toolchain; qualquer JDK 25 compatível (incluindo Termux OpenJDK 25) pode compilar o projeto.

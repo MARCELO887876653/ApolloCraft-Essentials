@@ -818,8 +818,15 @@ public final class PluginModule {
         EntityListLayout hubLayout =
                 guiLayouts.loadEntityList("management", "hub", EntityListLayout.paginatedDefault(Material.NETHER_STAR));
         ModuleControlView moduleControlView = new ModuleControlView(
-                registry, config, kernel.scheduler(), plugin.getDataFolder().toPath(), kernel.log());
-        resources.addListener(moduleControlView);
+                registry,
+                config,
+                kernel.scheduler(),
+                plugin.getDataFolder().toPath(),
+                kernel.log(),
+                menus,
+                guiText,
+                kernel.messages(),
+                kernel.messageSink());
         guiRegistry.register(new ManagementGuiEntry(
                 "modules",
                 GuiMessageKey.MODULE_CONTROL_ENTRY,

@@ -34,7 +34,6 @@ class BuiltInGeneratorsTest {
         assertThat(BuiltInGenerators.ref("void").value()).isEqualTo("ApolloCraftEssentials:void");
         assertThat(BuiltInGenerators.ref("flat").value()).isEqualTo("ApolloCraftEssentials:flat");
     }
-
     @Test
     void legacyNamespaceRemainsAccepted() {
         assertThat(BuiltInGenerators.idOf("uxmEssentials:void")).contains("void");

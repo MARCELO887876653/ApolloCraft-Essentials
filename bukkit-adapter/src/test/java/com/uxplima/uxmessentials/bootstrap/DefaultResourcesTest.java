@@ -41,8 +41,8 @@ class DefaultResourcesTest {
         ConfigStore config = ConfigurateConfigStore.loadLayout(dataFolder, new NoopLogger());
 
         assertThat(config.getString("storage.backend", "?")).isEqualTo("sqlite");
-        assertThat(config.getString("storage.file", "?")).isEqualTo("uxmessentials.db");
-        assertThat(config.getString("messages.default-locale", "?")).isEqualTo("en");
+        assertThat(config.getString("storage.file", "?")).isEqualTo("apollocraft.db");
+        assertThat(config.getString("messages.default-locale", "?")).isEqualTo("pt");
         assertThat(config.getInt("modules.teleport.default-warmup", -1)).isEqualTo(3);
         assertThat(config.getInt("modules.homes.default-limit", -1)).isEqualTo(3);
         assertThat(config.getString("modules.economy.wallet.default-currency", "?"))
@@ -104,7 +104,7 @@ class DefaultResourcesTest {
         // The settings the newer default ships are now in their file, and their own value still wins.
         ConfigStore config = ConfigurateConfigStore.loadLayout(dataFolder, new NoopLogger());
         assertThat(config.getString("storage.backend", "?")).isEqualTo("mysql");
-        assertThat(config.getString("messages.default-locale", "?")).isEqualTo("en");
+        assertThat(config.getString("messages.default-locale", "?")).isEqualTo("pt");
         // The baseline has moved on, so a restart appends nothing a second time.
         String afterFirstRun = Files.readString(dataFolder.resolve("config.conf"));
         DefaultResources.writeInto(dataFolder, JUL, "9.9.9");
