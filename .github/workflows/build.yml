@@ -14,24 +14,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar codigo
+      - name: Baixar ApolloCraft Essentials
         uses: actions/checkout@v4
+        with:
+          path: ApolloCraft-Essentials
+
+      - name: Baixar uxmLib
+        uses: actions/checkout@v4
+        with:
+          repository: UXPLIMA/uxm-lib
+          ref: 0.4.0
+          path: uxmLib
 
       - name: Configurar Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
 
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Dar permissao ao Gradle
+        working-directory: ApolloCraft-Essentials
         run: chmod +x gradlew
 
+      - name: Preparar Paper
+        working-directory: ApolloCraft-Essentials
+        run: ./gradlew :bukkit-adapter:paperweightUserdevSetup --no-parallel
+
       - name: Compilar ApolloCraft Essentials
+        working-directory: ApolloCraft-Essentials
         run: ./gradlew --no-daemon :bukkit-adapter:shadowJar
 
       - name: Enviar JAR
         uses: actions/upload-artifact@v4
         with:
           name: ApolloCraft-Essentials
-          path: bukkit-adapter/build/libs/*.jar
+          path: ApolloCraft-Essentials/bukkit-adapter/build/libs/*.jar
           if-no-files-found: error
