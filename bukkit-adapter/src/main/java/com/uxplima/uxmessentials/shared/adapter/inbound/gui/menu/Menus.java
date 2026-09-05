@@ -60,12 +60,15 @@ import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.runtime.PagedLi
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.runtime.SelectorState;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.BedrockFormSpec;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.BedrockWidget;
+import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.ClickBranch;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.ClickKind;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.ListSpec;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.MenuItemSpec;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.MenuSpec;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.Ref;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.RefreshSpec;
+import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.Requirement;
+import com.uxplima.uxmessentials.shared.adapter.inbound.gui.menu.spec.RequirementSpec;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.property.ChildClickHandler;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.property.ConfirmOpener;
 import com.uxplima.uxmessentials.shared.adapter.inbound.gui.property.SelectorButton;
@@ -1331,8 +1334,7 @@ public final class Menus {
     private void appendStaticButtons(
             MenuSpec spec, MenuContext ctx, PlayerRef viewer, List<BedrockButton> buttons, List<Runnable> handlers) {
         for (MenuItemSpec item : renderer.visibleStaticItemsInSlotOrder(spec, ctx)) {
-            buttons.add(formButton(item, ctx, viewer));
-            handlers.add(() -> scheduler.onEntity(viewer, () -> runFormActions(ctx, item)));
+            appendBedrockGestureButtons(item, ctx, viewer, buttons, handlers);
         }
     }
 
@@ -1340,6 +1342,80 @@ public final class Menus {
     private BedrockButton formButton(MenuItemSpec item, MenuContext ctx, PlayerRef viewer) {
         BedrockImage image = BedrockIcons.forMaterialSpec(renderer.materialSpec(item, ctx), viewer.uuid());
         return new BedrockButton(renderer.buttonText(item, ctx), image);
+    }
+
+
+    /**
+     * Bedrock cannot distinguish the inventory gestures Java exposes. A form therefore represents every distinct
+     * actionable gesture as its own tappable choice. A single-action item stays a single clean button; a multi-action
+     * item gains one labelled button per semantic gesture. This keeps LEFT/RIGHT/SHIFT/MIDDLE/DROP/DOUBLE actions
+     * reachable without ever executing two branches from one tap.
+     */
+    private void appendBedrockGestureButtons(
+            MenuItemSpec item,
+            MenuContext ctx,
+            PlayerRef viewer,
+            List<BedrockButton> buttons,
+            List<Runnable> handlers) {
+        List<ClickKind> gestures = bedrockGestures(item);
+        if (gestures.isEmpty()) {
+            return;
+        }
+        BedrockButton base = formButton(item, ctx, viewer);
+        boolean selector = gestures.size() > 1;
+        for (ClickKind kind : gestures) {
+            String text = selector ? base.text() + "\n§7" + bedrockGestureLabel(kind) : base.text();
+            buttons.add(new BedrockButton(text, base.image()));
+            handlers.add(() -> scheduler.onEntity(viewer, () -> runFormGesture(ctx, item, kind)));
+        }
+    }
+
+    /**
+     * Gestures whose semantics cannot be expressed directly by a Bedrock inventory tap. ANY is represented by the
+     * normal primary tap path; if a specific gesture also changes conditions/requirements while sharing ANY actions,
+     * that gesture receives its own choice as well.
+     */
+    private static List<ClickKind> bedrockGestures(MenuItemSpec item) {
+        var click = item.click();
+        List<ClickKind> gestures = new ArrayList<>();
+        boolean sharedAction = !click.actions().getOrDefault(ClickKind.ANY, List.of()).isEmpty();
+        for (ClickKind kind : List.of(
+                ClickKind.LEFT,
+                ClickKind.RIGHT,
+                ClickKind.SHIFT_LEFT,
+                ClickKind.SHIFT_RIGHT,
+                ClickKind.MIDDLE,
+                ClickKind.DROP,
+                ClickKind.CONTROL_DROP,
+                ClickKind.DOUBLE_CLICK)) {
+            boolean ownAction = !click.actions().getOrDefault(kind, List.of()).isEmpty();
+            boolean ownSemantics = ownAction
+                    || !click.conditions().getOrDefault(kind, List.of()).isEmpty()
+                    || click.requirements().containsKey(kind)
+                    || click.orElse().containsKey(kind);
+            if (ownAction || (sharedAction && ownSemantics)) {
+                gestures.add(kind);
+            }
+        }
+        if (sharedAction && !gestures.contains(ClickKind.LEFT)) {
+            gestures.add(0, ClickKind.LEFT);
+        }
+        return List.copyOf(gestures);
+    }
+
+    /** Short, player-facing labels used only when one Java item needs multiple Bedrock choices. */
+    private static String bedrockGestureLabel(ClickKind kind) {
+        return switch (kind) {
+            case LEFT -> "Ação principal";
+            case RIGHT -> "Ação secundária";
+            case SHIFT_LEFT -> "Ação extra (Shift + principal)";
+            case SHIFT_RIGHT -> "Ação extra (Shift + secundária)";
+            case MIDDLE -> "Ação extra (clique do meio)";
+            case DROP -> "Ação extra (soltar)";
+            case CONTROL_DROP -> "Ação extra (soltar pilha)";
+            case DOUBLE_CLICK -> "Ação extra (clique duplo)";
+            case ANY -> "Ação";
+        };
     }
 
     /**
@@ -1368,8 +1444,7 @@ public final class Menus {
                 (List<Object>) entries, listItem.get().slots().slots(), ctx.page());
         for (Map.Entry<Integer, Object> placement : page.placements()) {
             MenuContext entryCtx = ctx.withEntry(placement.getValue());
-            buttons.add(formButton(template, entryCtx, viewer));
-            handlers.add(() -> scheduler.onEntity(viewer, () -> runFormActions(entryCtx, template)));
+            appendBedrockGestureButtons(template, entryCtx, viewer, buttons, handlers);
         }
         return page.pageCount();
     }
@@ -1426,15 +1501,91 @@ public final class Menus {
         });
     }
 
-    /**
-     * Run the tapped item's left-click actions against {@code ctx}, on the viewer's entity thread the caller already
-     * hopped onto. A tap is a plain click, so it runs the item's {@code actionsFor(LEFT)} chain — which already merges
-     * the shared {@link ClickKind#ANY} block — through the shared {@link #runActions} runner, so a form tap reaches
-     * the identical handler a chest click would. Per-click requirements and deny routing are a later item; this runs
-     * the actions only.
-     */
-    private void runFormActions(MenuContext ctx, MenuItemSpec item) {
-        runActions(ctx, item.click().actionsFor(ClickKind.LEFT));
+    /** Run one semantic Java gesture selected from a Bedrock form, preserving its gates and fallbacks. */
+    private void runFormGesture(MenuContext ctx, MenuItemSpec item, ClickKind kind) {
+        if (!formClickConditionsPass(item, kind, ctx)) {
+            return;
+        }
+        RequirementSpec requirement = item.click().requirementFor(kind);
+        if (!formRequirementsPass(ctx, kind, requirement)) {
+            Optional<ClickBranch> fallback = item.click().elseFor(kind);
+            if (fallback.isPresent()) {
+                runFormBranch(ctx, kind, fallback.get());
+            } else {
+                runActions(ctx, kind, requirement.deny());
+            }
+            return;
+        }
+        runActions(ctx, kind, item.click().actionsFor(kind));
+    }
+
+    /** Conditions bound to the selected gesture plus the shared ANY conditions. */
+    private boolean formClickConditionsPass(MenuItemSpec item, ClickKind kind, MenuContext ctx) {
+        ConditionRegistry conditions = openConditionRegistry;
+        if (conditions == null) {
+            return true;
+        }
+        List<Ref> refs = new ArrayList<>(item.click().conditions().getOrDefault(kind, List.of()));
+        refs.addAll(item.click().conditions().getOrDefault(ClickKind.ANY, List.of()));
+        for (Ref ref : refs) {
+            Ref eff = ref.resolve(conditions::has);
+            if (!conditions
+                    .get(eff.id())
+                    .map(p -> p.test(ctx, ActionArguments.resolve(eff.args(), ctx.arguments())))
+                    .orElse(false)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Requirement evaluation matching the chest click path, including optional gates and per-gate actions. */
+    private boolean formRequirementsPass(MenuContext ctx, ClickKind kind, RequirementSpec spec) {
+        if (openConditionRegistry == null || spec.requirements().isEmpty()) {
+            return true;
+        }
+        int passes = 0;
+        boolean mandatoryFail = false;
+        int min = spec.minimum();
+        int cap = Math.min(min, spec.requirements().size());
+        for (Requirement requirement : spec.requirements()) {
+            if (formRequirementPass(ctx, kind, requirement)) {
+                passes++;
+            } else if (!requirement.optional()) {
+                mandatoryFail = true;
+            }
+            if (spec.stopAtSuccess() && min > 0 && passes >= cap) {
+                break;
+            }
+        }
+        return min <= 0 ? !mandatoryFail : passes >= cap;
+    }
+
+    /** Evaluate one requirement and fire its own success/deny side effects. */
+    private boolean formRequirementPass(MenuContext ctx, ClickKind kind, Requirement requirement) {
+        ConditionRegistry conditions = openConditionRegistry;
+        if (conditions == null) {
+            return true;
+        }
+        Ref eff = requirement.condition().resolve(conditions::has);
+        boolean result = conditions
+                        .get(eff.id())
+                        .map(p -> p.test(ctx, ActionArguments.resolve(eff.args(), ctx.arguments())))
+                        .orElse(false)
+                != requirement.inverted();
+        runActions(ctx, kind, result ? requirement.success() : requirement.deny());
+        return result;
+    }
+
+    /** Walk the selected gesture's else/else-if chain exactly once; first passing branch wins. */
+    private void runFormBranch(MenuContext ctx, ClickKind kind, ClickBranch branch) {
+        if (formRequirementsPass(ctx, kind, branch.requirement())) {
+            runActions(ctx, kind, branch.actions());
+        } else if (branch.orElse().isPresent()) {
+            runFormBranch(ctx, kind, branch.orElse().get());
+        } else {
+            runActions(ctx, kind, branch.requirement().deny());
+        }
     }
 
     /**
@@ -1470,6 +1621,11 @@ public final class Menus {
      * registry (a list/spec-only test engine), matching {@link #runOpenActions}.
      */
     private void runActions(MenuContext ctx, List<Ref> refs) {
+        runActions(ctx, ClickKind.LEFT, refs);
+    }
+
+    /** Dispatch form actions with the semantic gesture the Bedrock player explicitly selected. */
+    private void runActions(MenuContext ctx, ClickKind kind, List<Ref> refs) {
         ActionRegistry actions = openActionRegistry;
         if (actions == null) {
             return;
@@ -1483,7 +1639,7 @@ public final class Menus {
             Map<String, String> args = ActionArguments.resolveLocals(
                     ActionArguments.resolve(eff.args(), ctx.arguments()), ctx.localPlaceholders());
             actions.get(eff.id())
-                    .ifPresent(handler -> handler.accept(new MenuActionContext(ctx, live, ClickKind.LEFT, args)));
+                    .ifPresent(handler -> handler.accept(new MenuActionContext(ctx, live, kind, args)));
         }
     }
 
